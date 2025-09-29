@@ -1,4 +1,4 @@
 alias b := build
 
 build:
-    forge build
+    forge build --via-ir

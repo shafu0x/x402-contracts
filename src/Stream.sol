@@ -5,11 +5,16 @@ import { ISablierLockup }               from "@sablier/lockup/src/interfaces/ISa
 import { Broker, Lockup, LockupLinear } from "@sablier/lockup/src/types/DataTypes.sol";
 import { ud60x18 }                      from "@prb/math/src/UD60x18.sol";
 import { IERC20 }                       from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC3009 }                     from "./IERC3009.sol";
 
 contract Stream {
 
     ISablierLockup public immutable LOCKUP;
+
+    mapping(bytes32 nonce => bool used) public usedIntentNonce;
+
+    bytes32 public immutable DOMAIN_SEPARATOR;
 
     struct StreamIntent {
         address sender;
@@ -21,10 +26,46 @@ contract Stream {
         bool    transferable;
         uint256 validBefore;
         uint256 validAfter;
+        bytes32 nonce;
     }
+
+    bytes32 public constant STREAM_INTENT_TYPEHASH = keccak256(
+        "StreamIntent(address sender,address recipient,uint256 totalAmount,address token,bytes32 durationsHash,bool cancelable,bool transferable,uint256 validBefore,uint256 validAfter,bytes32 nonce)"
+    );
 
     constructor(address _sablierLockup) {
         LOCKUP = ISablierLockup(_sablierLockup);
+
+        DOMAIN_SEPARATOR = keccak256(abi.encode(
+            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+            keccak256(bytes("Stream")),
+            keccak256(bytes("1")),
+            block.chainid,
+            address(this)
+        ));
+    }
+
+    function hashStreamIntent(StreamIntent calldata si) public view returns (bytes32) {
+        return keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                DOMAIN_SEPARATOR,
+                keccak256(
+                    abi.encode(
+                        STREAM_INTENT_TYPEHASH,
+                        si.sender,
+                        si.recipient,
+                        si.totalAmount,
+                        si.token,
+                        si.durationsHash,
+                        si.cancelable,
+                        si.transferable,
+                        si.validBefore,
+                        si.validAfter
+                    )
+                )
+            )
+        );
     }
 
     function createStream(
@@ -41,6 +82,14 @@ contract Stream {
         require(block.timestamp            <  si.validBefore);
         require(si.durationsHash == keccak256(abi.encode(durations)));
         require(si.totalAmount   > 0);
+
+        bytes32 durationsHash = keccak256(abi.encode(durations));
+        require(si.durationsHash == durationsHash);
+
+        address signer = ECDSA.recover(hashStreamIntent(si), intentSignature);
+        require(signer == si.sender);
+
+        usedIntentNonce[si.nonce] = true;
 
         IERC3009(si.token).transferWithAuthorization(
             si.sender, 
