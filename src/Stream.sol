@@ -7,6 +7,7 @@ import { ud60x18 }                      from "@prb/math/src/UD60x18.sol";
 import { IERC20 }                       from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC3009 }                     from "../interface/IERC3009.sol";
+import { console2 }                     from "forge-std/console2.sol";
 
 struct StreamIntent {
     address sender;

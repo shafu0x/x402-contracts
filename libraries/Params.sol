@@ -6,4 +6,9 @@ library Params {
                             BASE SEPOLIA
     //////////////////////////////////////////////////////////////*/
     address constant BASESEPOLIA_SABLIER_LOCKUP = 0xa4777CA525d43a7aF55D45b11b430606d7416f8d;
+
+    /*//////////////////////////////////////////////////////////////
+                            SEPOLIA
+    //////////////////////////////////////////////////////////////*/
+    address constant SEPOLIA_SABLIER_LOCKUP = 0xd116c275541cdBe7594A202bD6AE4DBca4578462;
 }
