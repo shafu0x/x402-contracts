@@ -2,4 +2,4 @@
 @prb/math/=node_modules/@prb/math/
 @sablier/airdrops/=node_modules/@sablier/airdrops/
 @sablier/lockup/=node_modules/@sablier/lockup/
-forge-std/=node_modules/forge-std/
+forge-std/=node_modules/forge-std/src/

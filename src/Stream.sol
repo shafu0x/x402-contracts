@@ -6,7 +6,7 @@ import { Broker, Lockup, LockupLinear } from "@sablier/lockup/src/types/DataType
 import { ud60x18 }                      from "@prb/math/src/UD60x18.sol";
 import { IERC20 }                       from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import { IERC3009 }                     from "./IERC3009.sol";
+import { IERC3009 }                     from "../interface/IERC3009.sol";
 
 contract Stream {
 
@@ -79,15 +79,13 @@ contract Stream {
         bytes32                r,
         bytes32                s
     ) public returns (uint256 streamId) {
-        require(block.timestamp            <  si.validBefore);
-        require(si.durationsHash == keccak256(abi.encode(durations)));
-        require(si.totalAmount   > 0);
-
         bytes32 durationsHash = keccak256(abi.encode(durations));
+
+        require(block.timestamp  <  si.validBefore);
+        require(si.totalAmount   > 0);
         require(si.durationsHash == durationsHash);
 
-        address signer = ECDSA.recover(hashStreamIntent(si), intentSignature);
-        require(signer == si.sender);
+        require(ECDSA.recover(hashStreamIntent(si), intentSignature) == si.sender);
 
         usedIntentNonce[si.nonce] = true;
 
