@@ -6,8 +6,6 @@ import { Broker, Lockup, LockupLinear } from "@sablier/lockup/src/types/DataType
 import { ud60x18 }                      from "@prb/math/src/UD60x18.sol";
 import { IERC20 }                       from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import { IERC3009 }                     from "../interface/IERC3009.sol";
-import { console2 }                     from "forge-std/console2.sol";
 
 struct StreamIntent {
     address sender;
@@ -70,15 +68,9 @@ contract Stream {
     }
 
     function createStream(
-        StreamIntent           calldata si,              // stream intent
+        StreamIntent           calldata si,
         bytes                  calldata intentSignature,
-        LockupLinear.Durations calldata durations,
-        uint256                validAfter,
-        uint256                validBefore,
-        bytes32                nonce,
-        uint8                  v,
-        bytes32                r,
-        bytes32                s
+        LockupLinear.Durations calldata durations
     ) public returns (uint256 streamId) {
         bytes32 durationsHash = keccak256(abi.encode(durations));
 
@@ -90,18 +82,10 @@ contract Stream {
 
         usedIntentNonce[si.nonce] = true;
 
-        IERC3009(si.token).transferWithAuthorization(
-            si.sender, 
-            address(this), 
-            si.totalAmount,
-            validAfter, 
-            validBefore, 
-            nonce, 
-            v, 
-            r, 
-            s
-        );
+        // Transfer tokens from sender to this contract
+        IERC20(si.token).transferFrom(si.sender, address(this), si.totalAmount);
 
+        // Approve Sablier to spend tokens
         IERC20(si.token).approve(address(LOCKUP), si.totalAmount);
 
         Lockup.CreateWithDurations memory streamParams = Lockup.CreateWithDurations({
