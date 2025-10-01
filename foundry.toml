@@ -3,7 +3,7 @@
 [profile.default]
   auto_detect_solc = false
   bytecode_hash = "none"
-  evm_version = "shanghai"
+  # evm_version = "shanghai"
   fuzz = { runs = 1_000 }
   optimizer = true
   optimizer_runs = 5000
@@ -11,16 +11,6 @@
   solc = "0.8.26"
   src = "src"
   test = "test"
-
-[fmt]
-  bracket_spacing = true
-  int_types = "long"
-  line_length = 120
-  multiline_func_header = "all"
-  number_underscore = "thousands"
-  quote_style = "double"
-  tab_width = 4
-  wrap_comments = true
 
 [rpc_endpoints]
   sepolia = "${SEPOLIA_RPC_URL}"

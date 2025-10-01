@@ -8,6 +8,19 @@ import { IERC20 }                       from "@openzeppelin/contracts/token/ERC2
 import { ECDSA }                        from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { IERC3009 }                     from "../interface/IERC3009.sol";
 
+struct StreamIntent {
+    address sender;
+    address recipient;
+    uint256 totalAmount;
+    address token;
+    bytes32 durationsHash; // keccak256(abi.encode(Duration[]))
+    bool    cancelable;
+    bool    transferable;
+    uint256 validBefore;
+    uint256 validAfter;
+    bytes32 nonce;
+}
+
 contract Stream {
 
     ISablierLockup public immutable LOCKUP;
@@ -15,19 +28,6 @@ contract Stream {
     mapping(bytes32 nonce => bool used) public usedIntentNonce;
 
     bytes32 public immutable DOMAIN_SEPARATOR;
-
-    struct StreamIntent {
-        address sender;
-        address recipient;
-        uint256 totalAmount;
-        address token;
-        bytes32 durationsHash; // keccak256(abi.encode(Duration[]))
-        bool    cancelable;
-        bool    transferable;
-        uint256 validBefore;
-        uint256 validAfter;
-        bytes32 nonce;
-    }
 
     bytes32 public constant STREAM_INTENT_TYPEHASH = keccak256(
         "StreamIntent(address sender,address recipient,uint256 totalAmount,address token,bytes32 durationsHash,bool cancelable,bool transferable,uint256 validBefore,uint256 validAfter,bytes32 nonce)"
